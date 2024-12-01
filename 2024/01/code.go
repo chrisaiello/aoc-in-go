@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/jpillora/puzzler/harness/aoc"
+	"strings"
+	"strconv"
 )
 
 func main() {
@@ -19,6 +21,34 @@ func run(part2 bool, input string) any {
 	if part2 {
 		return "not implemented"
 	}
-	// solve part 1 here
-	return 43
+	// split input into lines
+	lines := strings.Split(strings.TrimSpace(input), "\n")
+	
+	// create slices for each column
+	col1 := make([]int, 0, len(lines))
+	col2 := make([]int, 0, len(lines))
+	
+	// parse each line
+	for _, line := range lines {
+		// split and trim spaces
+		fields := strings.Fields(line)
+		if len(fields) != 2 {
+			continue
+		}
+		
+		// parse numbers
+		n1, err := strconv.Atoi(fields[0])
+		if err != nil {
+			continue
+		}
+		n2, err := strconv.Atoi(fields[1])
+		if err != nil {
+			continue
+		}
+		
+		col1 = append(col1, n1)
+		col2 = append(col2, n2)
+	}
+	
+	return len(col1) // temporary return value
 }

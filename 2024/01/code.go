@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jpillora/puzzler/harness/aoc"
+	"sort"
 	"strings"
 	"strconv"
 )
@@ -49,6 +50,10 @@ func run(part2 bool, input string) any {
 		col1 = append(col1, n1)
 		col2 = append(col2, n2)
 	}
+	
+	// sort both slices
+	sort.Ints(col1)
+	sort.Ints(col2)
 	
 	return len(col1) // temporary return value
 }

@@ -8,10 +8,15 @@ import (
 	"github.com/jpillora/puzzler/harness/aoc"
 )
 
-var safe int = 0
-
 func main() {
 	aoc.Harness(run)
+}
+
+var safe int = 0
+
+type Row struct {
+	row   []int
+	retry bool
 }
 
 func abs(x int) int {
@@ -21,22 +26,27 @@ func abs(x int) int {
 	return x
 }
 func remove(slice []int, s int) []int {
-	return append(slice[:s], slice[s+1:]...)
+	newSlice := make([]int, 0, len(slice)-1)
+	newSlice = append(newSlice, slice[:s]...)
+	newSlice = append(newSlice, slice[s+1:]...)
+	return newSlice
 }
 
-func increasing_or_decreasing(row []int) bool {
+func increasing_or_decreasing(row Row) bool {
 	increasing := true
 	decreasing := true
+	// fail1 := -1
+	// fail2 := -1
 
-	for i, val := range row {
-		if i < len(row)-1 && row[i+1] >= val {
+	for i, val := range row.row {
+		if i < len(row.row)-1 && row.row[i+1] >= val {
 			//fmt.Println(row[i+1], ">=", val)
+
 			decreasing = false
 		}
 	}
-
-	for i, val := range row {
-		if i < len(row)-1 && row[i+1] <= val {
+	for i, val := range row.row {
+		if i < len(row.row)-1 && row.row[i+1] <= val {
 			increasing = false
 		}
 	}
@@ -44,24 +54,42 @@ func increasing_or_decreasing(row []int) bool {
 	return increasing || decreasing
 }
 
-func range_check(row []int) bool {
-	for i, val := range row {
-		if i == len(row)-1 {
-			fmt.Println(row, "is safe")
+func range_check(row Row) bool {
+	for i, val := range row.row {
+		if i == len(row.row)-1 {
+			// if row.retry {
+			// 	fmt.Println(row, "is safe")
+			// }
 			return true
-		} else if abs(val-row[i+1]) > 3 {
-			fmt.Println("Removing bad value")
-			validate_row(remove(row, i))
+		} else if abs(val-row.row[i+1]) > 3 {
 			return false
 		}
 	}
 	return false
 }
 
-func validate_row(row []int) bool {
+func validate_row(row Row) bool {
 	if range_check(row) && increasing_or_decreasing(row) {
-		safe++
+		if row.retry {
+			fmt.Println(row, "is safe")
+		}
+		if !row.retry {
+			safe++
+		}
 		return true
+	}
+	if !row.retry {
+		retry_success := false
+		for i := range row.row {
+			new_row := Row{remove(row.row, i), true}
+			fmt.Println("Retrying ", row, "with: ", new_row)
+			if validate_row(new_row) {
+				retry_success = true
+			}
+		}
+		if retry_success {
+			safe++
+		}
 	}
 	return false
 }
@@ -81,8 +109,9 @@ func run(part2 bool, input string) any {
 			x, _ := strconv.Atoi(char)
 			int_s = append(int_s, x)
 		}
+		row := Row{int_s, false}
 
-		validate_row(int_s)
+		validate_row(row)
 
 	}
 

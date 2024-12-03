@@ -16,24 +16,25 @@ func main() {
 func run(part2 bool, input string) any {
 	// mul(11,8)
 	re1 := regexp.MustCompile(`mul\((\d+,\d+)\)`)
-	re2 := regexp.MustCompile(`(?s)don't\(\).*?do\(\)`)
+	re2 := regexp.MustCompile(`don't\(\).*?(do\(\)|$)`)
 	sum := 0
 
 	// trim := strings.TrimSpace(input)
 	// lines := strings.Split(trim, "\n")
 
 	//for _, line := range lines {
+	fmt.Println("INPUT: ", input)
 	cleaned_line := re2.ReplaceAllString(input, "")
+	fmt.Println("CLEANED: ", cleaned_line)
 	matches := re1.FindAllStringSubmatch(cleaned_line, -1)
-	//matches2 := re2.FindAllString(line, -1)
-	//fmt.Println(line)
-	fmt.Println(cleaned_line)
-	//fmt.Println(matches2)
+	//fmt.Println(matches)
 	for _, match := range matches {
 		nums := strings.Split(match[1], ",")
 		x, _ := strconv.Atoi(nums[0])
 		y, _ := strconv.Atoi(nums[1])
 		sum += x * y
+
+		fmt.Println("Match: ", match, "x: ", x, "y: ", y, "sum: ", sum)
 
 	}
 	//}

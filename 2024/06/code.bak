@@ -1,0 +1,155 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/jpillora/puzzler/harness/aoc"
+)
+
+func main() {
+	aoc.Harness(run)
+}
+
+type Coord struct {
+	X int
+	Y int
+}
+
+const (
+	STEP_LIMIT = 6274
+)
+
+var step = map[string]Coord{
+	"up":    {-1, 0},
+	"down":  {1, 0},
+	"left":  {0, -1},
+	"right": {0, 1},
+}
+
+var guard_loc Coord
+var cur_dir string
+var total_steps int
+var found_loops int
+
+func rotate(dir string) string {
+	switch dir {
+	case "up":
+		return "right"
+	case "right":
+		return "down"
+	case "down":
+		return "left"
+	case "left":
+		return "up"
+	}
+	return "err"
+}
+
+func find_start(grid [][]string) Coord {
+	for i, row := range grid {
+		for j, char := range row {
+			if char == "^" {
+				cur_dir = "up"
+				grid[i][j] = "X"
+				return Coord{i, j}
+			}
+		}
+	}
+	return Coord{-1, -1}
+}
+
+func count_x(grid [][]string) int {
+	sum := 0
+	for _, row := range grid {
+		for _, char := range row {
+			if char == "X" {
+				sum++
+			}
+		}
+	}
+	return sum
+}
+
+func move(grid [][]string) any {
+	if total_steps >= STEP_LIMIT {
+		//fmt.Println("***You might be in a loop, bud.***")
+		found_loops++
+		return nil
+	}
+
+	move_step := step[cur_dir]
+	next_coord := Coord{guard_loc.X + move_step.X, guard_loc.Y + move_step.Y}
+
+	if next_coord.X >= len(grid) || next_coord.Y >= len(grid) {
+		//fmt.Println("Outside of the grid+ with", total_steps)
+		total_steps++
+		grid[guard_loc.X][guard_loc.Y] = "X"
+		return nil
+	}
+
+	if next_coord.X < 0 || next_coord.Y < 0 {
+		//fmt.Println("Outside of the grid- with", total_steps)
+		total_steps++
+		grid[guard_loc.X][guard_loc.Y] = "X"
+		return nil
+	}
+
+	move_square := grid[next_coord.X][next_coord.Y]
+	//fmt.Println("Next:", next_coord.X, next_coord.Y, move_square)
+
+	if move_square == "#" {
+		cur_dir = rotate(cur_dir)
+		//fmt.Println("Rotated to", cur_dir)
+		move(grid)
+		return nil
+	}
+
+	total_steps++
+	grid[guard_loc.X][guard_loc.Y] = "X"
+	guard_loc = Coord{next_coord.X, next_coord.Y}
+	move(grid)
+
+	return nil
+}
+
+func run(part2 bool, input string) any {
+	lines := strings.Split(input, "\n")
+	original_grid := make([][]string, len(lines))
+	for i := range original_grid {
+		original_grid[i] = strings.Split(lines[i], "")
+	}
+	grid := make([][]string, len(original_grid))
+	for i := range original_grid {
+		grid[i] = make([]string, len(original_grid[i]))
+		copy(grid[i], original_grid[i])
+	}
+
+	found_loops = 0
+
+	guard_loc = find_start(grid)
+	fmt.Println("Guard starts at", guard_loc)
+	fmt.Println("Testing up to", STEP_LIMIT, "steps")
+
+	for i, row := range grid {
+		for j := range row {
+			if grid[i][j] == "." {
+				//fmt.Println(found_loops)
+				//fmt.Println("Add obstacle at", i, j)
+				grid[i][j] = "#"
+				move(grid)
+
+				// Reset problem state
+				for k := range grid {
+					copy(grid[k], original_grid[k])
+				}
+				total_steps = 0
+				cur_dir = "up"
+				guard_loc = find_start(grid)
+				//fmt.Println("Guard starts at", guard_loc)
+			}
+		}
+	}
+
+	return found_loops
+}

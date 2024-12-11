@@ -28,7 +28,7 @@ var endings = make(map[Coord]int)
 
 var score int = 0
 
-func takestep(trlmap [][]int, pos Coord) int {
+func takestep(trlmap [][]int, pos Coord) {
 	X := pos.X
 	Y := pos.Y
 	curr_height := trlmap[X][Y]
@@ -38,7 +38,7 @@ func takestep(trlmap [][]int, pos Coord) int {
 		fmt.Println("DONE! Reached 9 at", pos)
 		//endings[pos]++
 		score++
-		return 1
+		return
 	}
 
 	for k, s := range steps {
@@ -59,7 +59,7 @@ func takestep(trlmap [][]int, pos Coord) int {
 		}
 	}
 
-	return 0
+	return
 }
 
 func run(part2 bool, input string) any {
